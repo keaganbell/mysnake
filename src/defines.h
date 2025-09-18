@@ -1,4 +1,8 @@
 #pragma once
+#pragma warning(disable:4244) // conversion loss of data
+#pragma warning(disable:4505) // unreferenced operator
+#pragma warning(disable:4201) // anonymous structs (msvc specific)
+
 #include "stdint.h"
 #include "stddef.h"
 
@@ -19,6 +23,8 @@ typedef u8 b8;
 typedef u32 b32;
 #define true  1
 #define false 0
+
+#define UNUSED(x) (void)(x)
 
 #define INVALID_CODEPATH assert(0);
 #define INVALID_DEFAULT_CASE default: assert(0);

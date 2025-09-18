@@ -1,6 +1,4 @@
 #pragma once
-#include <GL/gl.h>
-
 #define GL_DEBUG_OUTPUT                   0x92E0
 #define GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB   0x8242
 
@@ -36,8 +34,6 @@
 #define GL_VERTEX_BINDING_BUFFER          0x8F4F
 #define GL_ARRAY_BUFFER_BINDING           0x8894
 #define GL_ELEMENT_ARRAY_BUFFER_BINDING   0x8895
-#define GL_UNIFORM_BUFFER                 0x8A11
-
 
 #define GL_ARRAY_BUFFER                   0x8892
 #define GL_ELEMENT_ARRAY_BUFFER           0x8893
@@ -213,14 +209,12 @@ typedef void gl_gen_buffers(GLsizei n, GLuint *buffers);
 typedef void gl_bind_buffer(GLenum target, GLuint buffer);
 typedef void gl_buffer_data(GLenum target, GLsizeiptr size, const void *data, GLenum usage);
 typedef void gl_buffer_sub_data(GLenum target, GLintptr offset, GLsizeiptr size, const void *data);
-typedef void gl_bind_buffer_base(GLenum target, GLuint index, GLuint buffer);
 static gl_gen_vertex_arrays *glGenVertexArrays;
 static gl_bind_vertex_array *glBindVertexArray;
 static gl_gen_buffers *glGenBuffers;
 static gl_bind_buffer *glBindBuffer;
 static gl_buffer_data *glBufferData;
 static gl_buffer_sub_data *glBufferSubData;
-static gl_bind_buffer_base *glBindBufferBase;
 
 typedef void gl_draw_elements_base_vertex(GLenum mode, GLsizei count, GLenum type, GLvoid *indices, GLint basevertex);
 static gl_draw_elements_base_vertex *glDrawElementsBaseVertex;
@@ -263,41 +257,3 @@ static gl_framebuffer_renderbuffer *glFramebufferRenderbuffer;
 typedef void debug_callback(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
 typedef void gl_debug_message_callback(debug_callback callback, const void *userParam);
 static gl_debug_message_callback *glDebugMessageCallback;
-
-
-typedef struct vertex {
-    vec3f position;
-    vec4f color;
-    vec2f uv;
-    u32 texid;
-} vertex_t;
-
-typedef struct vertices {
-    vertex_t *base;
-    u32 count;
-    u32 max_count;
-} vertices_t;
-
-#define MAX_QUAD_COUNT 1000
-#define MAX_VERTICES_COUNT MAX_QUAD_COUNT*4
-#define MAX_INDICES_COUNT MAX_QUAD_COUNT*6
-typedef struct opengl_state {
-    GLuint vao;
-    GLuint vbo;
-    GLuint ebo; // just 1 buffer with all the indices for quads
-    GLuint ubo;
-
-    GLuint proj;
-
-    GLuint shader_program;
-
-    vertices_t vertices;
-} opengl_state_t;
-
-#define check_glerror() {\
-    GLenum err = glGetError();\
-    if (err != GL_NO_ERROR) {\
-        lerror("GL_ERROR: 0x%x", err);\
-    }\
-}
-

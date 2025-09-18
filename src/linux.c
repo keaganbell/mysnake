@@ -1,5 +1,6 @@
 #pragma once
 #include <sys/inotify.h> // inotify
+#include <sys/mman.h> // mmap
 #include <unistd.h> // read
 #include <dlfcn.h> // dlopen, dlclose, dlsym
 #include <fcntl.h> // fcntl
@@ -50,4 +51,8 @@ static void reload_gamelib(linux_state_t *state) {
     dlclose(state->gamelib);
     state->gamelib = dlopen("./"DLL_FILENAME, RTLD_LAZY);
     state->game_update_and_render = dlsym(state->gamelib, "game_update_and_render");
+}
+
+void *platform_alloc(size_t size) {
+    return mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 }

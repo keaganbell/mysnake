@@ -4,17 +4,17 @@
 static inline void set_button_state(buttonkeys_t key, int action) {
     switch (action) {
         case GLFW_PRESS: {
-            g_linux_state.input.buttons[key].down = true;
-            g_linux_state.input.buttons[key].pressed = true;
-            g_linux_state.input.buttons[key].released = false;
-            g_linux_state.input.buttons[key].up = false;
+            g_platform_state.input.buttons[key].down = true;
+            g_platform_state.input.buttons[key].pressed = true;
+            g_platform_state.input.buttons[key].released = false;
+            g_platform_state.input.buttons[key].up = false;
         } break;
 
         case GLFW_RELEASE: {
-            g_linux_state.input.buttons[key].down = false;
-            g_linux_state.input.buttons[key].pressed = false;
-            g_linux_state.input.buttons[key].released = true;
-            g_linux_state.input.buttons[key].up = true;
+            g_platform_state.input.buttons[key].down = false;
+            g_platform_state.input.buttons[key].pressed = false;
+            g_platform_state.input.buttons[key].released = true;
+            g_platform_state.input.buttons[key].up = true;
         } break;
 
         case GLFW_REPEAT: {
@@ -68,20 +68,20 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
             set_button_state(MOUSE_BUTTON_MIDDLE, action);
         } break;
 
-        default:
+        default: {}
     }
 }
 
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
     (void)window;
-    g_linux_state.input.mousex = xpos;
-    g_linux_state.input.mousey = ypos;
+    g_platform_state.input.mousex = xpos;
+    g_platform_state.input.mousey = ypos;
 }
 
 // glfw callback
 void framebuffer_size_callback(GLFWwindow* window, i32 width, i32 height) {
     (void)window;
-    g_linux_state.input.screenwidth = width;
-    g_linux_state.input.screenheight = height;
-    g_linux_state.input.resized = true;
+    g_platform_state.input.screenwidth = width;
+    g_platform_state.input.screenheight = height;
+    g_platform_state.input.resized = true;
 }

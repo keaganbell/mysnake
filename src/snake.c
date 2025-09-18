@@ -7,13 +7,15 @@
  *  - BG Music
  *  - Sound effects
  *
- * STATE MACHINE:
  *
  * WORLD GEN:
  *
  * 
  *
  */
+#include <GLFW/glfw3.h>
+#include <GL/gl.h>
+
 #include "defines.h"
 #include "log.h"
 #include "memory.h"
@@ -21,6 +23,98 @@
 #include "platform.h"
 #include "input.h"
 #include "snake.h"
+#include "opengl.h"
+#include "opengl.c"
+
+// just hacking this together since i don't care about this project anymore
+#if defined(_WIN64)
+#include <windows.h>
+void win32_init_opengl_functions() {
+    glCreateShader = (gl_create_shader *)wglGetProcAddress("glCreateShader");
+    glDeleteShader = (gl_delete_shader *)wglGetProcAddress("glDeleteShader");
+    glShaderSource = (gl_shader_source *)wglGetProcAddress("glShaderSource");
+    glCompileShader = (gl_compile_shader *)wglGetProcAddress("glCompileShader");
+    glGetShaderInfoLog = (gl_get_shader_info_log *)wglGetProcAddress("glGetShaderInfoLog");
+    glGetShaderiv = (gl_get_shaderiv *)wglGetProcAddress("glGetShaderiv");
+
+    glCreateProgram = (gl_create_program *)wglGetProcAddress("glCreateProgram");
+    glDeleteProgram = (gl_delete_program *)wglGetProcAddress("glDeleteProgram");
+    glAttachShader = (gl_attach_shader *)wglGetProcAddress("glAttachShader");
+    glLinkProgram = (gl_link_program *)wglGetProcAddress("glLinkProgram");
+    glUseProgram = (gl_use_program *)wglGetProcAddress("glUseProgram");
+    glValidateProgram = (gl_validate_program *)wglGetProcAddress("glValidateProgram");
+    glGetProgramInfoLog = (gl_get_program_info_log *)wglGetProcAddress("glGetProgramInfoLog");
+    glGetProgramiv = (gl_get_programiv *)wglGetProcAddress("glGetProgramiv");
+
+    glGetUniformLocation = (gl_get_uniform_location *)wglGetProcAddress("glGetUniformLocation");
+    glUniformMatrix4fv = (gl_uniform_matrix4fv *)wglGetProcAddress("glUniformMatrix4fv");
+    glUniform1i = (gl_uniform1i *)wglGetProcAddress("glUniform1i");
+    glUniform1f = (gl_uniform1f *)wglGetProcAddress("glUniform1f");
+    glUniform2fv = (gl_uniform2fv *)wglGetProcAddress("glUniform2fv");
+    glUniform3fv = (gl_uniform3fv *)wglGetProcAddress("glUniform3fv");
+    glUniform4fv = (gl_uniform4fv *)wglGetProcAddress("glUniform4fv");
+
+    glGenVertexArrays = (gl_gen_vertex_arrays *)wglGetProcAddress("glGenVertexArrays");
+    glBindVertexArray = (gl_bind_vertex_array *)wglGetProcAddress("glBindVertexArray");
+    glGenBuffers = (gl_gen_buffers *)wglGetProcAddress("glGenBuffers");
+    glBindBuffer = (gl_bind_buffer *)wglGetProcAddress("glBindBuffer");
+    glBufferData = (gl_buffer_data *)wglGetProcAddress("glBufferData");
+    glBufferSubData = (gl_buffer_sub_data *)wglGetProcAddress("glBufferSubData");
+    glBindBufferBase = (gl_bind_buffer_base *)wglGetProcAddress("glBindBufferBase");
+
+    glDrawElementsBaseVertex = (gl_draw_elements_base_vertex *)wglGetProcAddress("glDrawElementsBaseVertex");
+
+    glGetAttribLocation = (gl_get_attrib_location *)wglGetProcAddress("glGetAttribLocation");
+    glBindAttribLocation = (gl_bind_attrib_location *)wglGetProcAddress("glBindAttribLocation");
+    glEnableVertexAttribArray = (gl_enable_vertex_attrib_array *)wglGetProcAddress("glEnableVertexAttribArray");
+    glDisableVertexAttribArray = (gl_disable_vertex_attrib_array *)wglGetProcAddress("glDisableVertexAttribArray");
+    glVertexAttribPointer = (gl_vertex_attrib_pointer *)wglGetProcAddress("glVertexAttribPointer");
+    glVertexAttribIPointer = (gl_vertex_attribi_pointer *)wglGetProcAddress("glVertexAttribIPointer");
+
+    glGenFramebuffers = (gl_gen_framebuffers *)wglGetProcAddress("glGenFramebuffers");
+    glBindFramebuffer = (gl_bind_framebuffer *)wglGetProcAddress("glBindFramebuffer");
+    glFramebufferTexture2D = (gl_framebuffer_texture_2d *)wglGetProcAddress("glFramebufferTexture2D");
+    glCheckFramebufferStatus = (gl_check_framebuffer_status *)wglGetProcAddress("glCheckFramebufferStatus");
+    glTexImage2DMultisample = (gl_tex_image_2d_multisample *)wglGetProcAddress("glTexImage2DMultisample");
+    glBlitFramebuffer = (gl_blit_framebuffer *)wglGetProcAddress("glBlitFramebuffer");
+
+    glGenRenderbuffers = (gl_gen_render_buffers *)wglGetProcAddress("glGenRenderbuffers");
+    glBindRenderbuffer = (gl_bind_renderbuffer *)wglGetProcAddress("glBindRenderbuffer");
+    glRenderbufferStorageMultisample = (gl_render_buffer_storage_multisample *)wglGetProcAddress("glRenderbufferStorageMultisample");
+    glFramebufferRenderbuffer = (gl_framebuffer_renderbuffer *)wglGetProcAddress("glFramebufferRenderbuffer");
+
+    //glDebugMessageCallback = (gl_debug_message_callback *)wglGetProcAddress("glDebugMessageCallback");
+}
+#endif
+
+void *initialize_renderer(arena_t *arena) {
+    opengl_state_t *gl = push_struct(arena, opengl_state_t);
+    win32_init_opengl_functions();
+    initialize_opengl_state(gl);
+    return gl;
+}
+
+entire_file_t read_entire_file(const char *filename) {
+    entire_file_t result = {};
+    FILE *file = fopen(filename, "rb");
+    if (!file) {
+        lerror("Failed to locate file: %s", filename);
+        return result;
+    }
+    fseek(file, 0, SEEK_END);
+    size_t filesize = ftell(file);
+    rewind(file);
+    result.data = malloc(filesize + 1);
+    fread(result.data, 1, filesize, file);
+    fclose(file);
+    result.data[filesize] = '\0';
+    return result;
+}
+
+void free_file(entire_file_t file) {
+    assert(file.data);
+    free(file.data);
+}
 
 #include "render.c"
 
@@ -245,7 +339,7 @@ void game_update_and_render(game_memory_t *memory, render_command_group_t *rende
         game->permanent_arena.used += sizeof(gamestate_t);
 
         // initialize renderer
-        game->renderer = platform_initialize_renderer(&game->permanent_arena);
+        game->renderer = initialize_renderer(&game->permanent_arena);
 
         game->paused = false;
         game->randnum = 1; // seed
@@ -297,4 +391,6 @@ void game_update_and_render(game_memory_t *memory, render_command_group_t *rende
     render_snake(render_commands, game->world.snake.position, game->world.coords);
 
     render_gameplay_timer(render_commands, game->world.coords, game->gametime);
+
+    opengl_process_render_commands(render_commands);
 }

@@ -2,3 +2,6 @@
 ./snake.so
 
 *.swp
+
+build/
+.vscode/
